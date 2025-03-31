@@ -77,7 +77,7 @@ class DyndnsStack(cdk.Stack):
         )
 
         #Give lambda permissions to read DynamoDB table
-        table.grant_read_data(fn)
+        table.grant_read_write_data(fn)
 
         #Suppress AwsSolutions-IAM5 triggered by Resources::*
         NagSuppressions.add_resource_suppressions(

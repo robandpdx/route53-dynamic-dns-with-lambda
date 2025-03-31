@@ -158,3 +158,15 @@ _newrecord.py_ provides all the flags to successfully run the script:
 ```
 
 More information on how to invoke the Lambda URL can be found here: [invocation.md](invocation.md)
+
+### DynamoDB Table Fields
+
+The DynamoDB table stores the following fields for each hostname:
+
+- `hostname`: The hostname (e.g., `www.example.com`).
+- `data`: A JSON object containing:
+  - `route_53_zone_id`: The Route53 hosted zone ID.
+  - `route_53_record_ttl`: The TTL for the DNS record.
+  - `shared_secret`: The shared secret for authentication.
+- `last_contact`: A timestamp indicating the last time the Lambda function was invoked successfully.
+- `last_update`: A timestamp indicating the last time the Route53 DNS record was updated.

@@ -120,6 +120,12 @@ if confirm == 'y':
                 },
                 'data': {
                     'S': '{"route_53_zone_id": "'+hzid+'","route_53_record_ttl": '+str(ttl)+',"shared_secret": "'+secret+'"}'
+                },
+                'last_contact': {
+                    'S': ''
+                },
+                'last_update': {
+                    'S': ''
                 }
             }
         )
