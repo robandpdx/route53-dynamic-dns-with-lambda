@@ -9,6 +9,7 @@ import hashlib
 import boto3
 import os
 from botocore.exceptions import ClientError
+from datetime import datetime
 
 '''
 This function pulls the json config data from DynamoDB and returns a python dictionary.
@@ -158,8 +159,12 @@ def run_set_mode(ddns_hostname, validation_hash, source_ip):
         else:
             route53_ip = route53_get_response['return_message']
         # If the client's current IP matches the current DNS record
-        # in Route 53 there is nothing left to do.
+        # in Route 53 there is nothing left to do, except update the last_contact
+        # timestamp in DynamoDB.
+        last_contact = datetime.utcnow().isoformat()
         if route53_ip == source_ip:
+            # Update last_contact timestamp when DNS record is unchanged
+            update_dynamodb_last_contact_and_update(ddns_hostname, last_contact)
             return_status = 'success'
             return_message = 'Your IP address matches '\
                 'the current Route53 DNS record.'
@@ -168,6 +173,8 @@ def run_set_mode(ddns_hostname, validation_hash, source_ip):
         # If the IP addresses do not match or if the record does not exist,
         # Tell Route 53 to set the DNS record.
         else:
+            # Update last_update timestamp when DNS record is changed
+            update_dynamodb_last_contact_and_update(ddns_hostname, last_contact, last_contact)
             return_status = route53_client(
                 'set_record',
                 route_53_zone_id,
@@ -176,6 +183,24 @@ def run_set_mode(ddns_hostname, validation_hash, source_ip):
                 route_53_record_type,
                 source_ip)
             return return_status
+
+
+'''
+The function that updaters the last_contact and last_update timestamps in DynamoDB.
+'''
+def update_dynamodb_last_contact_and_update(ddns_hostname, last_contact, last_update=None):
+    dynamodb = boto3.client("dynamodb")
+    update_expression = "SET last_contact = :last_contact"
+    expression_attribute_values = {":last_contact": {"S": last_contact}}
+    if last_update:
+        update_expression += ", last_update = :last_update"
+        expression_attribute_values[":last_update"] = {"S": last_update}
+    dynamodb.update_item(
+        TableName=os.environ.get("ddns_config_table"),
+        Key={'hostname': {'S': ddns_hostname}},
+        UpdateExpression=update_expression,
+        ExpressionAttributeValues=expression_attribute_values
+    )
 
 
 '''
