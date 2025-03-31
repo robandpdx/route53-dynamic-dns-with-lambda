@@ -129,7 +129,7 @@ def run_set_mode(ddns_hostname, validation_hash, source_ip):
         return [400, {'return_status': return_status,
                 'return_message': return_message}]
     # Calculate the validation hash.
-    hashcheck=source_ip + ddns_hostname + shared_secret
+    hashcheck=ddns_hostname + shared_secret
     calculated_hash=hashlib.sha256(
         hashcheck.encode('utf-8')).hexdigest()
     # Compare the validation_hash from the client to the

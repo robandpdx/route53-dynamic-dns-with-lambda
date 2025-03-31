@@ -57,9 +57,8 @@ elif [ $mode = "set" ]; then
     if [ -z "$host" ] | [ -z "$secret" ]; then
         exit 1
     fi    
-    getip
     #Create hash
-    hash=`echo -n $ip$host$secret | shasum -a 256 | awk '{print $1}'`
+    hash=`echo -n $host$secret | shasum -a 256 | awk '{print $1}'`
     #Call lambda url
     curl --ipv4 -s -X POST -w ",{\"status_code\":\"%{http_code}\"}" -H 'content-type: application/json' -d '{"execution_mode":"'$mode'", "ddns_hostname":"'$host'", "validation_hash":"'$hash'"}' $url
 else
