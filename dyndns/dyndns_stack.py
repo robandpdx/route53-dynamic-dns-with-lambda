@@ -67,7 +67,7 @@ class DyndnsStack(cdk.Stack):
         )            
 
         #Create FunctionURL for invocation - principal will be set to * as it required for invocation from any HTTP client
-        fn.add_function_url(
+        fn_url = fn.add_function_url(
             #Allow unauthenticated access
             auth_type=lambda_.FunctionUrlAuthType.NONE,
             #Set CORS for any source
@@ -75,6 +75,8 @@ class DyndnsStack(cdk.Stack):
                 allowed_origins=["*"]
             )
         )
+
+        cdk.CfnOutput(self, "invoke-function-url", value=fn_url.url)
 
         #Give lambda permissions to read DynamoDB table
         table.grant_read_write_data(fn)
