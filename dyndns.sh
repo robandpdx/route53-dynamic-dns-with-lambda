@@ -58,7 +58,11 @@ elif [ $mode = "set" ]; then
         exit 1
     fi    
     #Create hash
-    hash=`echo -n $host$secret | shasum -a 256 | awk '{print $1}'`
+    if command -v sha256sum >/dev/null 2>&1; then
+        hash=$(printf '%s' "$host$secret" | sha256sum | awk '{print $1}')
+    else
+        hash=$(printf '%s' "$host$secret" | shasum -a 256 | awk '{print $1}')
+    fi
     #Call lambda url
     curl --ipv4 -s -X POST -w ",{\"status_code\":\"%{http_code}\"}" -H 'content-type: application/json' -d '{"execution_mode":"'$mode'", "ddns_hostname":"'$host'", "validation_hash":"'$hash'"}' $url
 else
